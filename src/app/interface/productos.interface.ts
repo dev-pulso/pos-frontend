@@ -1,0 +1,61 @@
+import type { CategoriaResponse } from "./categorias.interface";
+
+export enum Rols {
+  SUPER_ADMIN = "super_admin",
+  ADMIN = "admin",
+  CASHIER = "cashier",
+}
+
+export type UnidadMedida = 'unidad' | 'kg';
+
+export interface CategoriasResponse {
+  id: string;
+  nombre: string;
+  descripcion?: string;
+  productos: Productos[];
+}
+
+export interface Productos {
+  id: string;
+  barcode: string;
+  nombre: string;
+  descripcion: string;
+  sku: string;
+  unidadMedida: UnidadMedida;
+  precio: number;
+  costo: number;
+  stock: number;
+  isActive: boolean;
+  categoria: CategoriasResponse;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+
+export interface ProductoDto {
+  id?: string;
+  nombre: string;
+  barcode: string;
+  unidadMedida: UnidadMedida;
+  descripcion?: string;
+  precio: number;
+  costo: number;
+  stock?: number;
+  isActive?: boolean;
+  categoriaId: string;
+}
+export interface ProductoResponse {
+  id: string;
+  barcode: string;
+  nombre: string;
+  descripcion: string;
+  sku: string;
+  unidadMedida: UnidadMedida;
+  precio: number;
+  costo: number;
+  stock: number;
+  isActive: boolean;
+  categoria: CategoriaResponse;
+  createdAt: Date;
+  updatedAt: Date;
+}
