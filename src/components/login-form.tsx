@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
-import Logo from "@/assets/image/logo.png";
 import {
   InputGroup,
   InputGroupAddon,
@@ -47,7 +46,7 @@ export function LoginForm({
       {
         onSuccess: (data) => {
           login(data.user, data.accessToken);
-          navigate("/inicio");
+          navigate("/punto-venta");
         },
         onError: (error) => {
           console.log(error);

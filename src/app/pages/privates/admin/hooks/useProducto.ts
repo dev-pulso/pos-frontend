@@ -8,8 +8,8 @@ export const useProductos = () => {
     const productosQuery = useQuery<ProductoResponse[], Error>({
         queryKey: ["productos"],
         queryFn: getProductos,
-        refetchOnWindowFocus: false,
-        staleTime: 1000 * 60 * 5,
+        refetchOnWindowFocus: true,
+        // staleTime: 1000 * 60 * 5,
         retry: 2
     });
 
@@ -17,6 +17,8 @@ export const useProductos = () => {
     const productos = useMemo(() => {
         return productosQuery.data
     }, [productosQuery.data])
+
+    console.log(productos);
 
     return {
         productos

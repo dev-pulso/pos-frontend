@@ -10,7 +10,19 @@ import NotFoundPage from "@/components/not-found";
 const LoginPage = lazy(() => import("@/app/pages/public/login/Login"));
 const RegisterPage = lazy(() => import("@/app/pages/public/register/Register"));
 const HomePage = lazy(() => import("@/app/pages/privates/home/HomePage"));
-const AdminPage = lazy(() => import("@/app/pages/privates/admin/AdminPage"));
+const DashboardPage = lazy(
+  () => import("@/app/pages/privates/dashboard/Dashboard")
+);
+const InventarioPage = lazy(
+  () => import("@/app/pages/privates/inventario/Inventario")
+);
+const CajaPage = lazy(() => import("@/app/pages/privates/caja/Caja"));
+const ReportesPage = lazy(
+  () => import("@/app/pages/privates/reportes/Reportes")
+);
+const ProductosPage = lazy(
+  () => import("@/app/pages/privates/productos/Productos")
+);
 
 export const AppRouter = () => {
   // const { isAuthenticated } = useAuthStore()
@@ -23,7 +35,6 @@ export const AppRouter = () => {
           <Route path="/auth/register" element={<RegisterPage />} />
         </Route>
         <Route
-          path="/inicio"
           element={
             <Suspense fallback={<POSLoading />}>
               <PrivateRoute isAuthenticated={true}>
@@ -33,7 +44,7 @@ export const AppRouter = () => {
           }
         >
           <Route
-            index
+            path="/punto-venta"
             element={
               <Suspense fallback={<POSLoading />}>
                 <PrivateRoute isAuthenticated={true}>
@@ -43,11 +54,51 @@ export const AppRouter = () => {
             }
           />
           <Route
-            path="/inicio/admin"
+            path="/dashboard"
             element={
               <Suspense fallback={<POSLoading />}>
                 <PrivateRoute isAuthenticated={true}>
-                  <AdminPage />
+                  <DashboardPage />
+                </PrivateRoute>
+              </Suspense>
+            }
+          />
+          <Route
+            path="/inventario"
+            element={
+              <Suspense fallback={<POSLoading />}>
+                <PrivateRoute isAuthenticated={true}>
+                  <InventarioPage />
+                </PrivateRoute>
+              </Suspense>
+            }
+          />
+          <Route
+            path="/caja"
+            element={
+              <Suspense fallback={<POSLoading />}>
+                <PrivateRoute isAuthenticated={true}>
+                  <CajaPage />
+                </PrivateRoute>
+              </Suspense>
+            }
+          />
+          <Route
+            path="/reportes"
+            element={
+              <Suspense fallback={<POSLoading />}>
+                <PrivateRoute isAuthenticated={true}>
+                  <ReportesPage />
+                </PrivateRoute>
+              </Suspense>
+            }
+          />
+          <Route
+            path="/productos"
+            element={
+              <Suspense fallback={<POSLoading />}>
+                <PrivateRoute isAuthenticated={true}>
+                  <ProductosPage />
                 </PrivateRoute>
               </Suspense>
             }

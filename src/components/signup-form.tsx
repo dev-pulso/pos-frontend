@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router";
-import Logo from "@/assets/image/logo.png";
 import {
   InputGroup,
   InputGroupAddon,
@@ -58,7 +57,7 @@ export function SignupForm({
       {
         onSuccess: () => {
           toast.success("Usuario registrado exitosamente");
-          navigate("/inicio");
+          navigate("/punto-venta");
         },
         onError: (error) => {
           console.log(error);

@@ -1,7 +1,7 @@
 import { getBaseUrl } from "./baseurl";
 
-// export const API_BASE = `${getBaseUrl()}/api`;
-export const API_BASE = "http://localhost:8000/api";
+export const API_BASE = `${getBaseUrl()}/api`;
+// export const API_BASE = "http://localhost:8000/api";
 
 
 export enum PRODUCT_ENDPOINT {

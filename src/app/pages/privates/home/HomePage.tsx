@@ -41,7 +41,7 @@ export default function HomePage() {
     <div className="flex w-full h-screen">
       {/* IZQUIERDA */}
       <div className="flex-1 flex flex-col p-6">
-        <POSHeader />
+        {/* <POSHeader /> */}
         <InputGroup className="text-lg p-3 mb-4">
           <InputGroupInput
             placeholder="Buscar por nombre o código de barras..."

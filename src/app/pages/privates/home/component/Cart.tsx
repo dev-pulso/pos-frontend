@@ -43,7 +43,7 @@ export default function Cart({
   } = useCart(cart, setCart);
 
   return (
-    <div className="w-[380px] p-6 border-l flex flex-col">
+    <div className="w-[380px] p-6 border-l flex flex-col h-[calc(100vh-64px)]">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold mb-4">
           <ShoppingCart className="inline-block mr-2" />
