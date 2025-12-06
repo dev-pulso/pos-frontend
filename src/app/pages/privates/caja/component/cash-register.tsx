@@ -20,16 +20,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DollarSign, Plus, Minus, Lock, Unlock } from "lucide-react";
-import type { CashRegister, CashMovement } from "@/lib/types";
+import type {
+  CajaRegistradora,
+  MovimientoCaja,
+} from "@/app/interface/caja-registradora.interface";
+import { formatCurrency } from "@/lib/utils";
 
 interface CashRegisterPanelProps {
-  register: CashRegister | null;
-  onOpen: (amount: number) => void;
+  register: CajaRegistradora | null;
+  onOpen: (monto: number) => void;
   onClose: () => void;
   onAddMovement: (
-    type: CashMovement["type"],
-    amount: number,
-    description: string
+    tipo: MovimientoCaja["tipo"],
+    monto: number,
+    descripcion: string
   ) => void;
 }
 
@@ -41,17 +45,11 @@ export function CashRegisterPanel({
 }: CashRegisterPanelProps) {
   const [openingAmount, setOpeningAmount] = useState("");
   const [movementDialogOpen, setMovementDialogOpen] = useState(false);
-  const [movementType, setMovementType] = useState<
-    "expense" | "withdrawal" | "deposit"
-  >("expense");
+  const [tipoMovimiento, setTipoMovimiento] = useState<
+    "venta" | "compra" | "deposito" | "retiro" | "cierre"
+  >("venta");
   const [movementAmount, setMovementAmount] = useState("");
   const [movementDescription, setMovementDescription] = useState("");
-
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("es-MX", {
-      style: "currency",
-      currency: "MXN",
-    }).format(amount);
 
   const formatTime = (date: string) =>
     new Date(date).toLocaleTimeString("es-MX", {
@@ -74,26 +72,26 @@ export function CashRegisterPanel({
 
   const handleAddMovement = () => {
     const amount = Number.parseFloat(movementAmount) || 0;
-    onAddMovement(movementType, amount, movementDescription);
+    onAddMovement(tipoMovimiento, amount, movementDescription);
     setMovementAmount("");
     setMovementDescription("");
     setMovementDialogOpen(false);
   };
 
-  const getMovementIcon = (type: CashMovement["type"]) => {
+  const getMovementIcon = (type: MovimientoCaja["tipo"]) => {
     switch (type) {
-      case "sale":
-      case "deposit":
+      case "venta":
+      case "deposito":
         return <Plus className="h-4 w-4 text-success" />;
-      case "expense":
-      case "withdrawal":
+      case "compra":
+      case "retiro":
         return <Minus className="h-4 w-4 text-destructive" />;
       default:
         return <DollarSign className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
-  if (!register || !register.isOpen) {
+  if (!register || !register.estaAbierta) {
     return (
       <Card className="border-border">
         <CardHeader>
@@ -140,27 +138,27 @@ export function CashRegisterPanel({
             <Unlock className="h-5 w-5 text-success" />
             Caja Abierta
           </CardTitle>
-          <Badge className="bg-success/10 text-success">Activa</Badge>
+          <Badge className="bg-green-500/10 text-green-500">Activa</Badge>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-lg bg-muted p-4">
               <p className="text-sm text-muted-foreground">Monto Inicial</p>
               <p className="text-xl font-bold text-foreground">
-                {formatCurrency(register.openingAmount)}
+                {formatCurrency(register.montoInicial)}
               </p>
             </div>
             <div className="rounded-lg bg-primary/10 p-4">
               <p className="text-sm text-muted-foreground">Saldo Actual</p>
               <p className="text-xl font-bold text-primary">
-                {formatCurrency(register.currentBalance)}
+                {formatCurrency(register.balanceActual)}
               </p>
             </div>
           </div>
 
           <div className="text-sm text-muted-foreground">
-            Abierta el {formatDate(register.openedAt)} a las{" "}
-            {formatTime(register.openedAt)}
+            Abierta el {formatDate(register.fechaApertura)} a las{" "}
+            {formatTime(register.fechaApertura)}
           </div>
 
           <div className="flex gap-3">
@@ -185,22 +183,22 @@ export function CashRegisterPanel({
           <CardTitle className="text-foreground">Movimientos del Día</CardTitle>
         </CardHeader>
         <CardContent>
-          {register.movements.length === 0 ? (
+          {register.movimientos.length === 0 ? (
             <p className="text-center text-muted-foreground py-4">
               No hay movimientos registrados
             </p>
           ) : (
             <div className="space-y-3">
-              {register.movements.map((movement) => (
+              {register.movimientos.map((movement) => (
                 <div
                   key={movement.id}
                   className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0"
                 >
                   <div className="flex items-center gap-3">
-                    {getMovementIcon(movement.type)}
+                    {getMovementIcon(movement.tipo)}
                     <div>
                       <p className="text-sm font-medium text-foreground">
-                        {movement.description}
+                        {movement.descripcion}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {formatTime(movement.createdAt)}
@@ -210,17 +208,16 @@ export function CashRegisterPanel({
                   <div className="text-right">
                     <p
                       className={`font-medium ${
-                        movement.type === "expense" ||
-                        movement.type === "withdrawal"
+                        movement.tipo === "venta" ||
+                        movement.tipo === "deposito"
                           ? "text-destructive"
                           : "text-success"
                       }`}
                     >
-                      {movement.type === "expense" ||
-                      movement.type === "withdrawal"
+                      {movement.tipo === "venta" || movement.tipo === "deposito"
                         ? "-"
                         : "+"}
-                      {formatCurrency(movement.amount)}
+                      {formatCurrency(movement.monto)}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       Saldo: {formatCurrency(movement.balance)}
@@ -244,8 +241,10 @@ export function CashRegisterPanel({
             <div className="space-y-2">
               <Label className="text-foreground">Tipo de Movimiento</Label>
               <Select
-                value={movementType}
-                onValueChange={(v) => setMovementType(v as typeof movementType)}
+                value={tipoMovimiento}
+                onValueChange={(v) =>
+                  setTipoMovimiento(v as typeof tipoMovimiento)
+                }
               >
                 <SelectTrigger className="bg-background text-foreground">
                   <SelectValue />

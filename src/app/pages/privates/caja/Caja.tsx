@@ -1,9 +1,11 @@
 import { CashRegisterPanel } from "./component/cash-register";
+import { useCajaRegistradora } from "./hooks/useCajaRegistradora";
 
 export default function Caja() {
-  const { register, open, close, addMovement } = useCashRegister();
+  const { register, abrirCaja, cerrarCaja, agregarMovimiento } =
+    useCajaRegistradora();
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div>
         <h1 className="text-3xl font-bold text-foreground">
           Caja Registradora
@@ -16,9 +18,9 @@ export default function Caja() {
       <div className="max-w-xl">
         <CashRegisterPanel
           register={register}
-          onOpen={open}
-          onClose={close}
-          onAddMovement={addMovement}
+          onOpen={abrirCaja}
+          onClose={cerrarCaja}
+          onAddMovement={agregarMovimiento}
         />
       </div>
     </div>

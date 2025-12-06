@@ -11,6 +11,7 @@ export interface DetalleVentas {
     productoId: string;
     gramos?: number;
     cantidad?: number;
+    nombre?: string;
     precioUnitario: number;
     subtotal: number;
 }
@@ -73,4 +74,25 @@ export interface Grafica {
 export interface Resumen {
     totalVentas: number;
     montoTotal: number;
+}
+
+export interface ReportesVentas {
+    fecha: string
+    totalVentas: number
+    totalCosto: number
+    gananciaBruta: number
+    totalTransacciones: number
+    topProductos: { nombre: string; cantidad: number; ingreso: number }[]
+}
+
+export interface Ventas {
+    id: string
+    items: DetalleVentas[]
+    subtotal: number
+    descuento: number
+    total: number
+    metodoPago: "efectivo" | "transferencia"
+    dineroRecibido?: number
+    cambio?: number
+    createdAt: Date
 }
