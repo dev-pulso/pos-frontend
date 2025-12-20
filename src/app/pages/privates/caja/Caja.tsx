@@ -1,9 +1,19 @@
+import { toast } from "sonner";
 import { CashRegisterPanel } from "./component/cash-register";
 import { useCajaRegistradora } from "./hooks/useCajaRegistradora";
 
 export default function Caja() {
-  const { register, abrirCaja, cerrarCaja, agregarMovimiento } =
+  const { queryError, abrirCaja, agregarMovimiento, registradoraAbierta } =
     useCajaRegistradora();
+
+  if (queryError) {
+    toast.error('',
+      {
+        description: queryError.response?.data.message as any,
+      }
+    )
+  }
+
   return (
     <div className="space-y-6 p-6">
       <div>
@@ -14,15 +24,17 @@ export default function Caja() {
           Administra el flujo de efectivo de tu tienda
         </p>
       </div>
+      <div className="flex justify-center">
 
-      <div className="max-w-xl">
-        <CashRegisterPanel
-          register={register}
-          onOpen={abrirCaja}
-          onClose={cerrarCaja}
-          onAddMovement={agregarMovimiento}
-        />
+        <div className="max-w-xl">
+          <CashRegisterPanel
+            register={registradoraAbierta!}
+            onOpen={abrirCaja}
+            onAddMovement={agregarMovimiento}
+          />
+        </div>
       </div>
+
     </div>
   );
 }

@@ -48,9 +48,8 @@ export function LoginForm({
           login(data.user, data.accessToken);
           navigate("/punto-venta");
         },
-        onError: (error) => {
-          console.log(error);
-          toast.error(error.message);
+        onError: (error: any) => {
+          toast.error(error.response?.data.message);
         },
       }
     );

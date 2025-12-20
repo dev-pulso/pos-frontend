@@ -6,6 +6,7 @@ export interface VentasDto {
     usuario: string
     descuento: number
     subtotal: number
+    metodoPago: "efectivo" | "transferencia"
 }
 export interface DetalleVentas {
     productoId: string;

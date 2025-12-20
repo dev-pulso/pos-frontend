@@ -15,21 +15,30 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { DollarSign, Plus, Minus, Lock, Unlock } from "lucide-react";
 import type {
+  AbrirCajaDto,
   CajaRegistradora,
+  CerrarCajaDto,
+  CrearMovimientoDto,
   MovimientoCaja,
 } from "@/app/interface/caja-registradora.interface";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatNumberInputCOP } from "@/lib/utils";
+import { useCajaRegistradora } from "../hooks/useCajaRegistradora";
+import { useAuthStore } from "@/store/auth.store";
+import { toast } from "sonner";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+
 
 interface CashRegisterPanelProps {
   register: CajaRegistradora | null;
   onOpen: (monto: number) => void;
-  onClose: () => void;
   onAddMovement: (
     tipo: MovimientoCaja["tipo"],
     monto: number,
@@ -40,16 +49,22 @@ interface CashRegisterPanelProps {
 export function CashRegisterPanel({
   register,
   onOpen,
-  onClose,
   onAddMovement,
 }: CashRegisterPanelProps) {
   const [openingAmount, setOpeningAmount] = useState("");
   const [movementDialogOpen, setMovementDialogOpen] = useState(false);
+  // const [tipoMovimiento, setTipoMovimiento] = useState<
+  //   "venta" | "compra" | "deposito" | "retiro" | "cierre"
+  // >("venta");
   const [tipoMovimiento, setTipoMovimiento] = useState<
-    "venta" | "compra" | "deposito" | "retiro" | "cierre"
-  >("venta");
+    "gasto" | "retiro" | "deposito"
+  >("gasto");
   const [movementAmount, setMovementAmount] = useState("");
   const [movementDescription, setMovementDescription] = useState("");
+
+  const { abrirCajaMutation, crearMovimientoMutation, cerrarCajaMutation } = useCajaRegistradora()
+  const { user } = useAuthStore()
+
 
   const formatTime = (date: string) =>
     new Date(date).toLocaleTimeString("es-MX", {
@@ -65,31 +80,92 @@ export function CashRegisterPanel({
     });
 
   const handleOpenRegister = () => {
-    const amount = Number.parseFloat(openingAmount) || 0;
-    onOpen(amount);
-    setOpeningAmount("");
+    if (!user) return;
+
+    const sanitizedAmount = Number(openingAmount.replace(/\D/g, "")) || 0;
+
+    const body: AbrirCajaDto = {
+      saldoInicial: sanitizedAmount,
+      usuarioId: user.id
+    }
+
+    const amount = sanitizedAmount;
+    abrirCajaMutation(body, {
+      onSuccess: () => {
+        toast.success("Caja abierta exitosamente")
+        onOpen(amount);
+        setOpeningAmount("");
+      },
+      onError: (error: any) => {
+        toast.error(error.response.data.message)
+      }
+    })
+
   };
 
   const handleAddMovement = () => {
-    const amount = Number.parseFloat(movementAmount) || 0;
-    onAddMovement(tipoMovimiento, amount, movementDescription);
-    setMovementAmount("");
-    setMovementDescription("");
-    setMovementDialogOpen(false);
+    // const amount = Number.parseFloat(movementAmount) || 0;
+    // // onAddMovement(tipoMovimiento, amount, movementDescription);
+    // setMovementAmount("");
+    // setMovementDescription("");
+    // setMovementDialogOpen(false);
+    if (!register) return;
+
+    const body: CrearMovimientoDto = {
+      tipo: tipoMovimiento,
+      monto: Number(movementAmount.replace(/\D/g, "")) || 0,
+      descripcion: movementDescription,
+      cajaId: register?.id
+    }
+
+    crearMovimientoMutation(body, {
+      onSuccess: () => {
+        toast.success("Movimiento registrado exitosamente")
+        setMovementAmount("");
+        setMovementDescription("");
+        setMovementDialogOpen(false);
+      },
+      onError: (error: any) => {
+        toast.error(error.response.data.message)
+      }
+    })
+
   };
+
+  const handleCloseRegister = () => {
+    if (!register) return;
+    if (!user) return;
+
+    const body: CerrarCajaDto = {
+      saldoFinal: register.balanceActual,
+      usuarioId: user.id
+    }
+    cerrarCajaMutation({ id: register.id, body }, {
+      onSuccess: () => {
+
+        toast.success("Caja cerrada exitosamente")
+      },
+      onError: (error: any) => {
+        toast.error(error.response.data.message)
+      }
+    })
+  }
+
 
   const getMovementIcon = (type: MovimientoCaja["tipo"]) => {
     switch (type) {
       case "venta":
       case "deposito":
-        return <Plus className="h-4 w-4 text-success" />;
-      case "compra":
+        return <Plus className="h-4 w-4 text-green-500" />;
+      case "gasto":
+        return <Minus className="h-4 w-4 text-red-500" />;
       case "retiro":
-        return <Minus className="h-4 w-4 text-destructive" />;
+        return <Minus className="h-4 w-4 text-red-500" />;
       default:
         return <DollarSign className="h-4 w-4 text-muted-foreground" />;
     }
   };
+
 
   if (!register || !register.estaAbierta) {
     return (
@@ -111,9 +187,12 @@ export function CashRegisterPanel({
             </Label>
             <Input
               id="openingAmount"
-              type="number"
+              type="text"
               value={openingAmount}
-              onChange={(e) => setOpeningAmount(e.target.value)}
+              onChange={(e) => {
+                const val = formatNumberInputCOP(e.target.value)
+                setOpeningAmount(val)
+              }}
               placeholder="0.00"
               className="bg-background text-foreground"
             />
@@ -148,7 +227,7 @@ export function CashRegisterPanel({
                 {formatCurrency(register.montoInicial)}
               </p>
             </div>
-            <div className="rounded-lg bg-primary/10 p-4">
+            <div className={`${register.montoInicial > register.balanceActual ? "bg-red-500/10 text-red-500" : "bg-green-500/10 text-green-500"} rounded-lg p-4`}>
               <p className="text-sm text-muted-foreground">Saldo Actual</p>
               <p className="text-xl font-bold text-primary">
                 {formatCurrency(register.balanceActual)}
@@ -170,10 +249,26 @@ export function CashRegisterPanel({
               <Plus className="mr-2 h-4 w-4" />
               Movimiento
             </Button>
-            <Button variant="destructive" onClick={onClose} className="flex-1">
-              <Lock className="mr-2 h-4 w-4" />
-              Cerrar Caja
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">
+                  <Lock className="mr-2 h-4 w-4" />
+                  Cerrar Caja
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>¿Estas seguro?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta acción cerrará la caja.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleCloseRegister}>Aceptar</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </CardContent>
       </Card>
@@ -207,20 +302,18 @@ export function CashRegisterPanel({
                   </div>
                   <div className="text-right">
                     <p
-                      className={`font-medium ${
-                        movement.tipo === "venta" ||
-                        movement.tipo === "deposito"
-                          ? "text-destructive"
-                          : "text-success"
-                      }`}
+                      className={`font-medium ${movement.tipo === "venta" || movement.tipo === "deposito"
+                        ? "text-green-500"
+                        : "text-red-500"
+                        }`}
                     >
                       {movement.tipo === "venta" || movement.tipo === "deposito"
-                        ? "-"
-                        : "+"}
-                      {formatCurrency(movement.monto)}
+                        ? "+"
+                        : "-"}
+                      {formatCurrency(Number(movement.monto))}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Saldo: {formatCurrency(movement.balance)}
+                      Saldo: {formatCurrency(Number(movement.balanceActual))}
                     </p>
                   </div>
                 </div>
@@ -237,8 +330,8 @@ export function CashRegisterPanel({
               Nuevo Movimiento
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
+          <div className="space-y-4 w-full">
+            <div className="space-y-2 w-full">
               <Label className="text-foreground">Tipo de Movimiento</Label>
               <Select
                 value={tipoMovimiento}
@@ -247,21 +340,27 @@ export function CashRegisterPanel({
                 }
               >
                 <SelectTrigger className="bg-background text-foreground">
-                  <SelectValue />
+                  <SelectValue placeholder="Selecciona un tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="expense">Gasto</SelectItem>
-                  <SelectItem value="withdrawal">Retiro</SelectItem>
-                  <SelectItem value="deposit">Depósito</SelectItem>
+                  <SelectGroup>
+                    <SelectLabel>Tipo de Movimiento</SelectLabel>
+                    <SelectItem value="gasto">Gasto</SelectItem>
+                    <SelectItem value="retiro">Retiro</SelectItem>
+                    <SelectItem value="deposito">Depósito</SelectItem>
+                  </SelectGroup>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label className="text-foreground">Monto</Label>
               <Input
-                type="number"
+                type="text"
                 value={movementAmount}
-                onChange={(e) => setMovementAmount(e.target.value)}
+                onChange={(e) => {
+                  const sanitizedValue = formatNumberInputCOP(e.target.value)
+                  setMovementAmount(sanitizedValue)
+                }}
                 placeholder="0.00"
                 className="bg-background text-foreground"
               />

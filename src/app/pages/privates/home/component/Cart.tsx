@@ -10,10 +10,11 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency, formatNumberInputCOP } from "@/lib/utils";
-import { ShoppingCart, Trash2 } from "lucide-react";
+import { ArrowRightLeft, Banknote, ShoppingCart, Trash2 } from "lucide-react";
 import { useCart } from "../hooks/useCart";
 import type { CartItem } from "@/app/interface/cart.interface";
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
 
 export default function Cart({
   cart,
@@ -30,10 +31,12 @@ export default function Cart({
     setDescuento,
     setEditingQuantities,
     setIsEditingQuantity,
+    setMetodoPago,
     setCashReceived,
     cashReceived,
     subtotal,
     cashAmount,
+    metodoPago,
     total,
     change,
     removeFromCart,
@@ -235,14 +238,39 @@ export default function Cart({
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Cambio</span>
                 <span
-                  className={`font-bold ${
-                    change >= 0 ? "text-foreground" : "text-destructive"
-                  }`}
+                  className={`font-bold ${change >= 0 ? "text-foreground" : "text-destructive"
+                    }`}
                 >
                   {formatCurrency(change)}
                 </span>
               </div>
             )}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              variant={metodoPago === "efectivo" ? "default" : "outline"}
+              onClick={() => setMetodoPago("efectivo")}
+              className={metodoPago === "efectivo" ? "bg-primary text-primary-foreground" : ""}
+            >
+              <Banknote className="mr-2 h-4 w-4" />
+              Efectivo
+            </Button>
+            {/* <Button
+                variant={paymentMethod === "card" ? "default" : "outline"}
+                onClick={() => setPaymentMethod("card")}
+                className={paymentMethod === "card" ? "bg-primary text-primary-foreground" : ""}
+              >
+                <CreditCard className="mr-2 h-4 w-4" />
+                Tarjeta
+              </Button> */}
+            <Button
+              variant={metodoPago === "transferencia" ? "default" : "outline"}
+              onClick={() => setMetodoPago("transferencia")}
+              className={metodoPago === "transferencia" ? "bg-primary text-primary-foreground" : ""}
+            >
+              <ArrowRightLeft className="mr-2 h-4 w-4" />
+              Transferencia
+            </Button>
           </div>
         </div>
         <Button

@@ -36,3 +36,21 @@ export function calculateProfit(sales: Ventas[]): { revenue: number; cost: numbe
   return { revenue, cost, profit: revenue - cost }
 }
 
+export const formatDate = (date: Date): string => {
+  const fecha = new Date(date)
+
+  console.log('fecha', fecha)
+
+  return fecha.toLocaleDateString("es-MX", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+export const formatTime = (date: string): string =>
+  new Date(date).toLocaleTimeString("es-MX", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+

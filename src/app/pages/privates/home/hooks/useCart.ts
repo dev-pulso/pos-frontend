@@ -11,6 +11,7 @@ export const useCart = (cart: CartItem[], setCart: React.Dispatch<React.SetState
     const [editingQuantities, setEditingQuantities] = useState<Record<string, string>>({});
     const [isEditingQuantity, setIsEditingQuantity] = useState(false)
     const [cashReceived, setCashReceived] = useState("")
+    const [metodoPago, setMetodoPago] = useState<"efectivo" | "transferencia">("efectivo")
     const [message, setMessage] = useState("")
 
     const queryClient = useQueryClient()
@@ -92,7 +93,8 @@ export const useCart = (cart: CartItem[], setCart: React.Dispatch<React.SetState
             cashRecibido: cashAmount,
             imprimirFactura: imprimirTicket,
             usuario: user?.nombres || "",
-            descuento: discount || 0
+            descuento: discount || 0,
+            metodoPago: metodoPago
         }
 
         mutationVentas.mutate(nuevaVenta, {
@@ -125,6 +127,7 @@ export const useCart = (cart: CartItem[], setCart: React.Dispatch<React.SetState
         removeFromCart,
         updateQuantity,
         setCashReceived,
+        setMetodoPago,
         descuento,
         descuentoSelect,
         imprimirTicket,
@@ -138,5 +141,6 @@ export const useCart = (cart: CartItem[], setCart: React.Dispatch<React.SetState
         total,
         change,
         message,
+        metodoPago,
     }
 }

@@ -23,6 +23,19 @@ export enum CAJON_ENDPOINT {
     ABRIR = "/cajon",
 }
 
+export enum CAJA_ENDPOINT {
+    ABRIR = "/caja/abrir",
+    CERRAR = "/caja/cerrar/:id",
+    LISTAR = "/caja/actual",
+    DETALLE = "/caja/:id",
+}
+
+export enum CAJA_MOVIMIENTO_ENDPOINT {
+    CREAR_MOVIMIENTO = "/movimientos-caja",
+    LISTAR_MOVIMIENTOS = "/movimientos-caja",
+    DETALLE_MOVIMIENTO = "/movimientos-caja/:id",
+}
+
 export enum VENTAS_ENDPOINT {
     CREAR_VENTAS = '/ventas',
     REPORTE_VENTAS = '/ventas',
@@ -63,5 +76,7 @@ export const ENDPOINTS = {
     CATEGORIA: CATEGORY_ENDPOINT,
     CAJON: CAJON_ENDPOINT,
     VENTAS: VENTAS_ENDPOINT,
+    CAJA: CAJA_ENDPOINT,
+    CAJA_MOVIMIENTO: CAJA_MOVIMIENTO_ENDPOINT,
     build: buildEndpoint,
 };
